@@ -1,6 +1,6 @@
-# Moltbook Prompt Injector 🦞
+# Crab Trap 🦀
 
-A tool for testing prompt injection vulnerabilities in AI agents. It generates malicious prompts and posts them to Moltbook, while an HTTP server collects and logs any executed commands.
+🦀 **Crab Trap** - A tool for testing prompt injection vulnerabilities in AI agents. It generates malicious prompts and posts them to Moltbook, while an HTTP server collects and logs any executed commands.
 
 ## Architecture
 
@@ -49,8 +49,8 @@ A tool for testing prompt injection vulnerabilities in AI agents. It generates m
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/your-username/moltbook-prompt-injector.git
-cd moltbook-prompt-injector
+git clone https://github.com/yoonhyunwoo/crab-trap.git
+cd crab-trap
 ```
 
 2. **Update `config.yaml`**:
@@ -94,7 +94,7 @@ sudo mv terraform /usr/local/bin/
 
 2. **Create SSH key**:
 ```bash
-ssh-keygen -t rsa -b 4096 -f terraform/moltbook-injector-key -N ""
+ssh-keygen -t rsa -b 4096 -f terraform/crab-trap-key -N ""
 ```
 
 3. **Configure variables**:
@@ -129,7 +129,7 @@ terraform output ssh_command
 ## Project Structure
 
 ```
-moltbook-prompt-injector/
+crab-trap/
 ├── cmd/
 │   ├── server/              # HTTP server
 │   │   └── main.go
@@ -254,7 +254,7 @@ Terraform creates:
 - **Security Group**: Ports 22 (SSH), 8080 (HTTP)
 - **IAM Role**: CloudWatch Logs permissions
 - **Route53 Record**: injector.thumbgo.kr
-- **CloudWatch Log Groups**: /moltbook-injector/server, /moltbook-injector/worker
+- **CloudWatch Log Groups**: /crab-trap/server, /crab-trap/worker
 - **Docker Compose**: Auto-start server and worker
 
 ## Security Notes

@@ -1,6 +1,6 @@
-module github.com/your-username/moltbook-prompt-injector
+module github.com/yoonhyunwoo/crab-trap
 
-go 1.23
+go 1.25.6
 
 require (
 	github.com/stretchr/testify v1.11.1

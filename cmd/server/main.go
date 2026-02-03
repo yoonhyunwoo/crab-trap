@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/your-username/moltbook-prompt-injector/internal/config"
-	"github.com/your-username/moltbook-prompt-injector/internal/server"
+	"github.com/yoonhyunwoo/crab-trap/internal/config"
+	"github.com/yoonhyunwoo/crab-trap/internal/server"
 )
 
 var (

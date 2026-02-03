@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/your-username/moltbook-prompt-injector/pkg/moltbook"
+	"github.com/yoonhyunwoo/crab-trap/pkg/moltbook"
 )
 
 func main() {

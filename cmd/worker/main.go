@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/your-username/moltbook-prompt-injector/internal/config"
-	"github.com/your-username/moltbook-prompt-injector/internal/worker"
+	"github.com/yoonhyunwoo/crab-trap/internal/config"
+	"github.com/yoonhyunwoo/crab-trap/internal/worker"
 )
 
 var (

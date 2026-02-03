@@ -14,7 +14,7 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_iam_role" "ec2_role" {
-  name = "moltbook-injector-ec2-role"
+  name = "crab-trap-ec2-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -52,13 +52,13 @@ resource "aws_iam_role_policy" "cloudwatch_logs" {
 }
 
 resource "aws_iam_instance_profile" "this" {
-  name = "moltbook-injector-instance-profile"
+  name = "crab-trap-instance-profile"
   role = aws_iam_role.ec2_role.name
 }
 
 resource "aws_security_group" "this" {
-  name        = "moltbook-injector-sg"
-  description = "Security group for moltbook prompt injector"
+  name        = "crab-trap-sg"
+  description = "Security group for crab-trap"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -86,17 +86,17 @@ resource "aws_security_group" "this" {
   }
 
   tags = {
-    Name = "moltbook-injector-sg"
+    Name = "crab-trap-sg"
   }
 }
 
 resource "aws_cloudwatch_log_group" "server" {
-  name              = "/moltbook-injector/server"
+  name              = "/crab-trap/server"
   retention_in_days = 7
 }
 
 resource "aws_cloudwatch_log_group" "worker" {
-  name              = "/moltbook-injector/worker"
+  name              = "/crab-trap/worker"
   retention_in_days = 7
 }
 
@@ -128,7 +128,7 @@ resource "aws_instance" "this" {
   }
 
   tags = {
-    Name        = "moltbook-injector"
+    Name        = "crab-trap"
     Environment = "production"
   }
 }

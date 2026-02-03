@@ -15,7 +15,7 @@ output "server_url" {
 
 output "ssh_command" {
   description = "SSH command to connect"
-  value       = "ssh -i moltbook-injector-key.pem ubuntu@${aws_instance.this.public_ip}"
+  value       = "ssh -i crab-trap-key.pem ubuntu@${aws_instance.this.public_ip}"
 }
 
 output "cloudwatch_server_logs" {

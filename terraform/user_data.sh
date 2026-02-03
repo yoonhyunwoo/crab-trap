@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Initializing Moltbook Prompt Injector..."
+echo "Initializing Crab Trap..."
 
 # Update system
 apt-get update -y
@@ -16,8 +16,12 @@ curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-comp
 chmod +x /usr/local/bin/docker-compose
 
 # Create application directory
-mkdir -p /opt/moltbook-injector
-cd /opt/moltbook-injector
+mkdir -p /opt/crab-trap
+cd /opt/crab-trap
+
+# Clone repository
+git clone https://github.com/yoonhyunwoo/crab-trap.git .
+
 
 # Create config.yaml
 cat > config.yaml <<'CONFIG_EOF'
@@ -114,12 +118,12 @@ volumes:
 COMPOSE_EOF
 
 # Create log directory
-mkdir -p /opt/moltbook-injector/logs
+mkdir -p /opt/crab-trap/logs
 
 echo "Building and starting services..."
-cd /opt/moltbook-injector
+cd /opt/crab-trap
 docker-compose build
 docker-compose up -d
 
-echo "Moltbook Prompt Injector started successfully!"
+echo "Crab Trap started successfully!"
 echo "Server URL: http://localhost:8080"

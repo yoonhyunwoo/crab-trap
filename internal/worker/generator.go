@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/your-username/moltbook-prompt-injector/internal/env"
+	"github.com/yoonhyunwoo/crab-trap/internal/env"
 )
 
 type Generator struct {
