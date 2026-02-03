@@ -1,6 +1,6 @@
-# Crab Trap 🦀
+# Crab Trap
 
-🦀 **Crab Trap** - A tool for testing prompt injection vulnerabilities in AI agents. It generates malicious prompts and posts them to Moltbook, while an HTTP server collects and logs any executed commands.
+**Crab Trap** - A tool for testing prompt injection vulnerabilities in AI agents. It generates malicious prompts and posts them to Moltbook, while an HTTP server collects and logs any executed commands.
 
 ## Architecture
 

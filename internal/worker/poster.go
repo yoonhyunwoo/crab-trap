@@ -23,7 +23,7 @@ func NewPoster(apiKey, submolt string) *Poster {
 }
 
 func (p *Poster) PostPrompt(prompt string, templateName string) error {
-	title := fmt.Sprintf("🦞 Prompt Injection Test: %s", templateName)
+	title := fmt.Sprintf("Prompt Injection Test: %s", templateName)
 	
 	_, err := p.client.CreatePost(moltbook.CreatePostRequest{
 		Submolt: p.submolt,
@@ -67,7 +67,7 @@ func (p *Poster) PostAllTemplates(generator *Generator) error {
 	prompts := generator.GenerateAll()
 
 	for _, prompt := range prompts {
-		title := fmt.Sprintf("🦞 Prompt Injection Test (Random) - %s", time.Now().Format("2006-01-02 15:04:05"))
+		title := fmt.Sprintf("Prompt Injection Test (Random) - %s", time.Now().Format("2006-01-02 15:04:05"))
 		
 		if err := p.PostWithRetry(title, prompt); err != nil {
 			return err

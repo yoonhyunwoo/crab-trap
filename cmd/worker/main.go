@@ -69,7 +69,7 @@ func main() {
 		log.Printf("Generated %d prompts", len(prompts))
 
 		for _, prompt := range prompts {
-			title := fmt.Sprintf("🦞 Prompt Injection Test (One-shot) - %s", time.Now().Format("2006-01-02 15:04:05"))
+			title := fmt.Sprintf("Prompt Injection Test (One-shot) - %s", time.Now().Format("2006-01-02 15:04:05"))
 			if err := poster.PostWithRetry(title, prompt); err != nil {
 				log.Printf("Failed to post: %v", err)
 			}
@@ -98,7 +98,7 @@ func runWorker(ticker <-chan time.Time, stopChan <-chan os.Signal, generator *wo
 			log.Printf("Generated %d prompts", len(prompts))
 
 			for _, prompt := range prompts {
-				title := fmt.Sprintf("🦞 Prompt Injection Test - %s", time.Now().Format("2006-01-02 15:04:05"))
+				title := fmt.Sprintf("Prompt Injection Test - %s", time.Now().Format("2006-01-02 15:04:05"))
 				if err := poster.PostWithRetry(title, prompt); err != nil {
 					log.Printf("Failed to post: %v", err)
 				}

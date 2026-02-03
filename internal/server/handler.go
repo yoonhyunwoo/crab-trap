@@ -9,14 +9,14 @@ import (
 )
 
 type RequestLog struct {
-	Timestamp   time.Time              `json:"timestamp"`
-	Method      string                 `json:"method"`
-	URL         string                 `json:"url"`
-	Headers     map[string][]string    `json:"headers"`
-	QueryParams map[string][]string    `json:"query_params"`
-	Body        string                 `json:"body"`
-	RemoteAddr  string                 `json:"remote_addr"`
-	UserAgent   string                 `json:"user_agent"`
+	Timestamp   time.Time           `json:"timestamp"`
+	Method      string              `json:"method"`
+	URL         string              `json:"url"`
+	Headers     map[string][]string `json:"headers"`
+	QueryParams map[string][]string `json:"query_params"`
+	Body        string              `json:"body"`
+	RemoteAddr  string              `json:"remote_addr"`
+	UserAgent   string              `json:"user_agent"`
 }
 
 type Handler struct {
@@ -39,8 +39,8 @@ func (h *Handler) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Request logged successfully",
+		"success":   true,
+		"message":   "Request logged successfully",
 		"timestamp": log.Timestamp,
 	})
 }
