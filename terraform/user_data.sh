@@ -5,7 +5,7 @@ echo "Initializing Crab Trap..."
 
 # Update system
 apt-get update -y
-apt-get install -y docker.io curl git
+apt-get install -y docker.io curl git awscli
 
 # Start Docker
 systemctl start docker
@@ -54,11 +54,27 @@ cat > docker-compose.yml <<'COMPOSE_EOF'
 version: '3.8'
 
 services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: ap-northeast-2
+        awslogs-group: "${server_log_group}"
+
   server:
     image: ${ecr_repository_url}:${image_tag}
     command: ["./server"]
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       - PORT=8080
       - LOG_DIR=/logs
@@ -70,7 +86,6 @@ services:
       options:
         awslogs-region: ap-northeast-2
         awslogs-group: "${server_log_group}"
-        awslogs-stream-prefix: server
 
   worker:
     image: ${ecr_repository_url}:${image_tag}
@@ -89,11 +104,19 @@ services:
       options:
         awslogs-region: ap-northeast-2
         awslogs-group: "${worker_log_group}"
-        awslogs-stream-prefix: worker
 
 volumes:
   logs:
+  caddy_data:
+  caddy_config:
 COMPOSE_EOF
+
+# Create Caddyfile
+cat > Caddyfile <<'CADDY_EOF'
+${subdomain}.${domain_name} {
+    reverse_proxy server:8080
+}
+CADDY_EOF
 
 # Create log directory
 mkdir -p /opt/crab-trap/logs
@@ -104,4 +127,4 @@ docker-compose pull
 docker-compose up -d
 
 echo "Crab Trap started successfully!"
-echo "Server URL: http://localhost:8080"
+echo "Server URL: https://${subdomain}.${domain_name}"
