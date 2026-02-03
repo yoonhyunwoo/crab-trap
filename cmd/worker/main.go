@@ -70,7 +70,7 @@ func main() {
 
 		for _, prompt := range prompts {
 			title := fmt.Sprintf("🦞 Prompt Injection Test (One-shot) - %s", time.Now().Format("2006-01-02 15:04:05"))
-			if err := poster.postWithRetry(title, prompt); err != nil {
+			if err := poster.PostWithRetry(title, prompt); err != nil {
 				log.Printf("Failed to post: %v", err)
 			}
 			time.Sleep(5 * time.Minute)
@@ -99,7 +99,7 @@ func runWorker(ticker <-chan time.Time, stopChan <-chan os.Signal, generator *wo
 
 			for _, prompt := range prompts {
 				title := fmt.Sprintf("🦞 Prompt Injection Test - %s", time.Now().Format("2006-01-02 15:04:05"))
-				if err := poster.postWithRetry(title, prompt); err != nil {
+				if err := poster.PostWithRetry(title, prompt); err != nil {
 					log.Printf("Failed to post: %v", err)
 				}
 				time.Sleep(5 * time.Minute)

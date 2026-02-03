@@ -69,7 +69,7 @@ func (p *Poster) PostAllTemplates(generator *Generator) error {
 	for _, prompt := range prompts {
 		title := fmt.Sprintf("🦞 Prompt Injection Test (Random) - %s", time.Now().Format("2006-01-02 15:04:05"))
 		
-		if err := p.postWithRetry(title, prompt); err != nil {
+		if err := p.PostWithRetry(title, prompt); err != nil {
 			return err
 		}
 	}
@@ -77,7 +77,7 @@ func (p *Poster) PostAllTemplates(generator *Generator) error {
 	return nil
 }
 
-func (p *Poster) postWithRetry(title, content string) error {
+func (p *Poster) PostWithRetry(title, content string) error {
 	maxRetries := 3
 	var lastErr error
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/moltbook/sdk-go/pkg/moltbook"
+	"github.com/your-username/moltbook-prompt-injector/pkg/moltbook"
 )
 
 func main() {

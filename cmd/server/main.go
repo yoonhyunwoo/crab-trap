@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/your-username/moltbook-prompt-injector/internal/config"
 	"github.com/your-username/moltbook-prompt-injector/internal/server"
