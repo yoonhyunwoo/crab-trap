@@ -77,7 +77,7 @@ Or run periodically:
 go run cmd/worker/main.go
 ```
 
-5. **Monitor**: Open http://localhost:8080
+5. **Monitor**: Open https://localhost:8080
 
 ### AWS Deployment
 
@@ -101,10 +101,10 @@ cp terraform.tfvars.example terraform.tfvars
 vim terraform.tfvars  # Add your api_key and IP
 ```
 
-4. **Deploy**:
+4. **Deploy ECR only**:
 ```bash
 AWS_PROFILE=yhw terraform init
-AWS_PROFILE=yhw terraform apply
+AWS_PROFILE=yhw terraform apply -target=aws_ecr_repository.this -target=aws_iam_role.ec2_role -target=aws_iam_role_policy_attachment.ecr_readonly
 ```
 
 5. **Build and push image**:
@@ -112,13 +112,20 @@ AWS_PROFILE=yhw terraform apply
 ../scripts/build-and-push.sh
 ```
 
-6. **Access**:
+6. **Deploy remaining resources**:
 ```bash
-terraform output server_url  # http://injector.thumbgo.kr
+AWS_PROFILE=yhw terraform apply
+```
+
+7. **Access**:
+```bash
+terraform output server_url  # https://injector.thumbgo.kr
 terraform output ssh_command
 ```
 
 **Note:** API key is stored in AWS Secrets Manager, not Terraform state.
+
+**Deployment order is important**: ECR must be deployed first, then the image must be built and pushed, before deploying the EC2 instance. The instance's user_data script pulls the image on startup.
 
 ## Project Structure
 
@@ -248,11 +255,11 @@ Each log entry contains:
 
 Terraform creates:
 - **EC2 Instance**: t3.small with Ubuntu 22.04
-- **Security Group**: Ports 22 (SSH), 8080 (HTTP)
-- **IAM Role**: CloudWatch Logs permissions
+- **Security Group**: Ports 22 (SSH), 80/443 (HTTPS)
+- **IAM Role**: CloudWatch Logs Full Access, ECR ReadOnly
 - **Route53 Record**: injector.thumbgo.kr
 - **CloudWatch Log Groups**: /crab-trap/server, /crab-trap/worker
-- **Docker Compose**: Auto-start server and worker
+- **Docker Compose**: Auto-start server, worker, and Caddy
 
 ## Security Notes
 
