@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  log_dir: "./logs"
+
+worker:
+  moltbook_api_key: "YOUR_MOLTBOOK_API_KEY"
+  server_url: "http://localhost:8080"
+  submolt: "general"
+  interval_minutes: 60
+  os_detection: true
+
+logging:
+  level: "info"
+  save_requests: true
