@@ -22,7 +22,8 @@ type WorkerConfig struct {
 	MoltbookAPIKey string        `yaml:"moltbook_api_key"`
 	ServerURL      string        `yaml:"server_url"`
 	Submolt        string        `yaml:"submolt"`
-	Interval       time.Duration `yaml:"interval_minutes"`
+	IntervalMinutes int          `yaml:"interval_minutes"`
+	Interval       time.Duration `yaml:"-"`
 	OSDetection    bool          `yaml:"os_detection"`
 }
 
@@ -42,7 +43,7 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg.Worker.Interval = cfg.Worker.Interval * time.Minute
+	cfg.Worker.Interval = time.Duration(cfg.Worker.IntervalMinutes) * time.Minute
 
 	return &cfg, nil
 }
