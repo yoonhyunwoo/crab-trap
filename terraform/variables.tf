@@ -44,3 +44,9 @@ variable "worker_interval_minutes" {
   description = "Worker execution interval in minutes"
   default     = 60
 }
+
+variable "image_tag" {
+  description = "Docker image tag"
+  type        = string
+  default     = "latest"
+}

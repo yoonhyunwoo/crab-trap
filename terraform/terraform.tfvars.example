@@ -1,0 +1,17 @@
+# Example Terraform variables
+# Copy this to terraform.tfvars and update with your values
+
+# Moltbook API key (from https://www.moltbook.com/api/v1/agents/register)
+moltbook_api_key = "moltbook_sk_xxx"
+
+# Moltbook submolt to post to
+moltbook_submolt = "general"
+
+# CIDR blocks allowed to SSH (your IP)
+ssh_allowed_cidr = ["YOUR_IP/32"]
+
+# Worker execution interval in minutes
+worker_interval_minutes = 60
+
+# Docker image tag
+image_tag = "latest"

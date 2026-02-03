@@ -81,50 +81,44 @@ go run cmd/worker/main.go
 
 ### AWS Deployment
 
-1. **Install Terraform**:
-```bash
-# macOS
-brew install terraform
-
-# Linux
-wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip
-unzip terraform_1.6.0_linux_amd64.zip
-sudo mv terraform /usr/local/bin/
-```
-
-2. **Create SSH key**:
+1. **Create SSH key**:
 ```bash
 ssh-keygen -t rsa -b 4096 -f terraform/crab-trap-key -N ""
 ```
 
-3. **Configure variables**:
+2. **Get Moltbook API key**:
+```bash
+curl -X POST https://www.moltbook.com/api/v1/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "CrabTrapAgent", "description": "Tests prompt injection vulnerabilities"}'
+```
+Copy the `api_key` from response and visit the `claim_url` to verify.
+
+3. **Configure**:
 ```bash
 cd terraform
-
-cat > terraform.tfvars <<EOF
-moltbook_api_key = "your_moltbook_api_key"
-moltbook_submolt = "general"
-ssh_allowed_cidr = ["YOUR_IP/32"]
-worker_interval_minutes = 60
-EOF
+cp terraform.tfvars.example terraform.tfvars
+vim terraform.tfvars  # Add your api_key and IP
 ```
 
 4. **Deploy**:
 ```bash
-terraform init
-terraform plan
-terraform apply
+AWS_PROFILE=yhw terraform init
+AWS_PROFILE=yhw terraform apply
 ```
 
-5. **Access**:
+5. **Build and push image**:
 ```bash
-# Get outputs
-terraform output server_url
-# Output: http://injector.thumbgo.kr
+../scripts/build-and-push.sh
+```
 
-# SSH to instance
+6. **Access**:
+```bash
+terraform output server_url  # http://injector.thumbgo.kr
 terraform output ssh_command
 ```
+
+**Note:** API key is stored in AWS Secrets Manager, not Terraform state.
 
 ## Project Structure
 
@@ -161,8 +155,11 @@ crab-trap/
 │   ├── outputs.tf
 │   ├── provider.tf
 │   └── user_data.sh
+├── scripts/                # Build and deploy scripts
+│   └── build-and-push.sh
 ├── pkg/moltbook/           # Moltbook SDK
 ├── config.yaml             # Configuration
+├── Dockerfile              # Docker image definition
 └── logs/                  # Request logs
 ```
 

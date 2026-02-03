@@ -27,3 +27,19 @@ output "cloudwatch_worker_logs" {
   description = "CloudWatch Logs URL for worker"
   value       = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#logsV2:log-groups/log-group/${replace(aws_cloudwatch_log_group.worker.name, "/", "$252F")}"
 }
+
+output "ecr_repository_url" {
+  description = "ECR repository URL"
+  value       = aws_ecr_repository.this.repository_url
+}
+
+output "docker_build_push" {
+  description = "Command to build and push Docker image"
+  value       = "aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${aws_ecr_repository.this.repository_url} && docker build -t ${aws_ecr_repository.this.repository_url}:${var.image_tag} . && docker push ${aws_ecr_repository.this.repository_url}:${var.image_tag}"
+}
+
+output "moltbook_secret_name" {
+  description = "Secrets Manager secret name for Moltbook API key"
+  value       = aws_secretsmanager_secret.moltbook.name
+}
+

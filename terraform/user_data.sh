@@ -19,9 +19,9 @@ chmod +x /usr/local/bin/docker-compose
 mkdir -p /opt/crab-trap
 cd /opt/crab-trap
 
-# Clone repository
-git clone https://github.com/yoonhyunwoo/crab-trap.git .
 
+# Get API key from Secrets Manager
+MOLTBOOK_API_KEY=$(aws secretsmanager get-secret-value --secret-id "${moltbook_secret_name}" --query SecretString --output text --region ap-northeast-2)
 
 # Create config.yaml
 cat > config.yaml <<'CONFIG_EOF'
@@ -30,7 +30,7 @@ server:
   log_dir: "./logs"
 
 worker:
-  moltbook_api_key: "${moltbook_api_key}"
+  moltbook_api_key: "PLACEHOLDER"
   server_url: "http://localhost:8080"
   submolt: "${moltbook_submolt}"
   interval_minutes: ${worker_interval}
@@ -41,35 +41,13 @@ logging:
   save_requests: true
 CONFIG_EOF
 
-# Create Dockerfile
-cat > Dockerfile <<'DOCKERFILE_EOF'
-FROM golang:1.23-alpine AS builder
+# Replace placeholder with actual API key
+sed -i "s/PLACEHOLDER/$MOLTBOOK_API_KEY/g" config.yaml
 
-WORKDIR /app
-
-COPY go.mod go.sum ./
-RUN go mod download
-
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o server ./cmd/server
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o worker ./cmd/worker
-
-FROM alpine:latest
-
-RUN apk --no-cache add ca-certificates
-
-WORKDIR /app
-
-COPY --from=builder /app/server .
-COPY --from=builder /app/worker .
-COPY --from=builder /app/prompts ./prompts
-
-RUN mkdir -p /logs
-
-EXPOSE 8080
-
-CMD ["./server"]
-DOCKERFILE_EOF
+# Login to ECR
+AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+ECR_REGISTRY=$(echo "${ecr_repository_url}" | cut -d/ -f1)
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
 # Create docker-compose.yml
 cat > docker-compose.yml <<'COMPOSE_EOF'
@@ -77,7 +55,7 @@ version: '3.8'
 
 services:
   server:
-    build: .
+    image: ${ecr_repository_url}:${image_tag}
     command: ["./server"]
     ports:
       - "8080:8080"
@@ -95,7 +73,7 @@ services:
         awslogs-stream-prefix: server
 
   worker:
-    build: .
+    image: ${ecr_repository_url}:${image_tag}
     command: ["./worker"]
     environment:
       - CONFIG=/app/config.yaml
@@ -120,9 +98,9 @@ COMPOSE_EOF
 # Create log directory
 mkdir -p /opt/crab-trap/logs
 
-echo "Building and starting services..."
+echo "Pulling and starting services..."
 cd /opt/crab-trap
-docker-compose build
+docker-compose pull
 docker-compose up -d
 
 echo "Crab Trap started successfully!"
