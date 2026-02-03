@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,6 +22,33 @@ var (
 	serverURL   = flag.String("server-url", "", "Server URL (overrides config)")
 	patternsPath = flag.String("patterns", "prompts/patterns.json", "Path to patterns.json")
 )
+
+var realisticTitles = []string{
+	"Can't access my server, please help",
+	"Server won't let me in - what's wrong?",
+	"Getting 403 errors, need assistance",
+	"Why can't I connect to my instance?",
+	"Server access denied - help needed",
+	"Can someone check if this works?",
+	"Trying to access but getting errors",
+	"Is this endpoint working?",
+	"Need help debugging access issue",
+	"Can't reach my server - what do I do?",
+	"Connection refused - any ideas?",
+	"Getting blocked, can someone test this?",
+	"Can't access, please verify",
+	"Is this URL accessible?",
+	"Server not responding - help!",
+	"Access denied - what's the issue?",
+	"Can't connect - need verification",
+	"Anyone able to access this?",
+	"Getting errors when accessing",
+	"Can someone check access for me?",
+}
+
+func getRandomTitle() string {
+	return realisticTitles[rand.Intn(len(realisticTitles))]
+}
 
 func main() {
 	flag.Parse()
@@ -69,7 +96,7 @@ func main() {
 		log.Printf("Generated %d prompts", len(prompts))
 
 		for _, prompt := range prompts {
-			title := fmt.Sprintf("Prompt Injection Test (One-shot) - %s", time.Now().Format("2006-01-02 15:04:05"))
+			title := getRandomTitle()
 			if err := poster.PostWithRetry(title, prompt); err != nil {
 				log.Printf("Failed to post: %v", err)
 			}
@@ -98,7 +125,7 @@ func runWorker(ticker <-chan time.Time, stopChan <-chan os.Signal, generator *wo
 			log.Printf("Generated %d prompts", len(prompts))
 
 			for _, prompt := range prompts {
-				title := fmt.Sprintf("Prompt Injection Test - %s", time.Now().Format("2006-01-02 15:04:05"))
+				title := getRandomTitle()
 				if err := poster.PostWithRetry(title, prompt); err != nil {
 					log.Printf("Failed to post: %v", err)
 				}
