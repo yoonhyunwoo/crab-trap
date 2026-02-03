@@ -10,7 +10,7 @@ output "instance_public_dns" {
 
 output "server_url" {
   description = "Full URL to access server"
-  value       = "http://${aws_route53_record.this.name}.${var.domain_name}"
+  value       = "https://${aws_route53_record.this.name}.${var.domain_name}"
 }
 
 output "ssh_command" {
