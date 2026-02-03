@@ -87,8 +87,18 @@ type Response struct {
 }
 
 func (r *Response) UnmarshalData(v interface{}) error {
-	if !r.Success || r.Data == nil {
-		return fmt.Errorf("response does not contain data: %s", r.ErrorMessage)
+	if !r.Success {
+		if r.ErrorMessage != "" {
+			return fmt.Errorf("API error: %s", r.ErrorMessage)
+		}
+		if r.Hint != "" {
+			return fmt.Errorf("API error: %s", r.Hint)
+		}
+		return fmt.Errorf("API error (status %d)", r.StatusCode)
+	}
+
+	if r.Data == nil {
+		return fmt.Errorf("response success but no data")
 	}
 
 	dataBytes, err := json.Marshal(r.Data)

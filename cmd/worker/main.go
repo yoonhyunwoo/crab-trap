@@ -16,7 +16,7 @@ import (
 var (
 	configPath  = flag.String("config", "config.yaml", "Path to config file")
 	once        = flag.Bool("once", false, "Run once and exit")
-	interval    = flag.Int("interval", 60, "Interval in minutes")
+	interval    = flag.Int("interval", 60, "Interval in minutes (minimum 30)")
 	apiKey     = flag.String("api-key", "", "Moltbook API key (overrides config)")
 	submolt    = flag.String("submolt", "", "Submolt name (overrides config)")
 	serverURL   = flag.String("server-url", "", "Server URL (overrides config)")
@@ -78,6 +78,10 @@ func main() {
 		log.Fatal("Moltbook API key is required. Set it in config.yaml or use --api-key flag")
 	}
 
+	if cfg.Worker.Interval < 30*time.Minute {
+		log.Println("Warning: Interval is less than 30 minutes. Moltbook has a 30-minute post cooldown.")
+	}
+
 	log.Printf("Starting worker...")
 	log.Printf("Server URL: %s", cfg.Worker.ServerURL)
 	log.Printf("Submolt: %s", cfg.Worker.Submolt)
@@ -88,7 +92,7 @@ func main() {
 		log.Fatalf("Failed to load patterns: %v", err)
 	}
 
-	poster := worker.NewPoster(cfg.Worker.MoltbookAPIKey, cfg.Worker.Submolt)
+	poster := worker.NewPoster(cfg.Worker.MoltbookAPIKey, cfg.Worker.Submolt, cfg.Worker.ServerURL)
 
 	if *once {
 		log.Println("Running once...")
@@ -110,10 +114,36 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	ticker := time.NewTicker(cfg.Worker.Interval)
+	// Add jitter to interval (±5 minutes)
+	jitter := time.Duration(rand.Intn(10)-5) * time.Minute
+	intervalWithJitter := cfg.Worker.Interval + jitter
+	if intervalWithJitter < 30*time.Minute {
+		intervalWithJitter = 30 * time.Minute // Minimum 30 minutes
+	}
+
+	ticker := time.NewTicker(intervalWithJitter)
 	defer ticker.Stop()
 
-	runWorker(ticker.C, sigChan, generator, poster)
+	go runWorker(ticker.C, sigChan, generator, poster)
+
+	log.Println("Starting initial worker run...")
+	prompts := generator.GenerateAll()
+	log.Printf("Generated %d prompts", len(prompts))
+
+	// Post only one random prompt per run
+	if len(prompts) > 0 {
+		randomPrompt := prompts[rand.Intn(len(prompts))]
+		title := getRandomTitle()
+		if err := poster.PostWithRetry(title, randomPrompt); err != nil {
+			log.Printf("Failed to post: %v", err)
+		}
+	}
+
+	log.Println("Initial worker run completed.")
+	log.Printf("Next run in %v (with jitter)", intervalWithJitter)
+
+	<-sigChan
+	log.Println("Received shutdown signal, stopping worker...")
 }
 
 func runWorker(ticker <-chan time.Time, stopChan <-chan os.Signal, generator *worker.Generator, poster *worker.Poster) {
@@ -124,12 +154,13 @@ func runWorker(ticker <-chan time.Time, stopChan <-chan os.Signal, generator *wo
 			prompts := generator.GenerateAll()
 			log.Printf("Generated %d prompts", len(prompts))
 
-			for _, prompt := range prompts {
+			// Post only one random prompt per run
+			if len(prompts) > 0 {
+				randomPrompt := prompts[rand.Intn(len(prompts))]
 				title := getRandomTitle()
-				if err := poster.PostWithRetry(title, prompt); err != nil {
+				if err := poster.PostWithRetry(title, randomPrompt); err != nil {
 					log.Printf("Failed to post: %v", err)
 				}
-				time.Sleep(5 * time.Minute)
 			}
 
 			log.Println("Worker run completed.")

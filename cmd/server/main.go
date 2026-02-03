@@ -41,6 +41,8 @@ func main() {
 	http.HandleFunc("/log", handler.HandleRequest)
 	http.HandleFunc("/health", handler.HandleHealth)
 	http.HandleFunc("/logs", handler.HandleLogs)
+	http.HandleFunc("/post", handler.HandlePost)
+	http.HandleFunc("/posts", handler.HandlePosts)
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 	log.Printf("Starting server on http://localhost%s", addr)

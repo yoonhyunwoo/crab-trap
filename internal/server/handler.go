@@ -22,6 +22,12 @@ type RequestLog struct {
 	UserAgent   string              `json:"user_agent"`
 }
 
+type PostRecord struct {
+	Timestamp time.Time `json:"timestamp"`
+	Title     string    `json:"title"`
+	URL       string    `json:"url"`
+}
+
 type Handler struct {
 	logger *Logger
 }
@@ -71,6 +77,46 @@ func (h *Handler) HandleLogs(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"count":   len(logs),
 		"logs":    logs,
+	})
+}
+
+func (h *Handler) HandlePost(w http.ResponseWriter, r *http.Request) {
+	if h.logger == nil {
+		http.Error(w, "Logger not configured", http.StatusInternalServerError)
+		return
+	}
+
+	var record PostRecord
+	if err := json.NewDecoder(r.Body).Decode(&record); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	r.Body.Close()
+
+	record.Timestamp = time.Now().UTC()
+	h.logger.LogPost(record)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+	})
+}
+
+func (h *Handler) HandlePosts(w http.ResponseWriter, r *http.Request) {
+	if h.logger == nil {
+		http.Error(w, "Logger not configured", http.StatusInternalServerError)
+		return
+	}
+
+	posts := h.logger.GetAllPosts()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"count":   len(posts),
+		"posts":   posts,
 	})
 }
 

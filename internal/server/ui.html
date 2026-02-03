@@ -15,14 +15,20 @@
         .chart-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .chart-container.full { grid-column: span 2; }
         .chart-container h3 { margin-top: 0; color: #333; }
-        .logs { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logs { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 30px; }
         .log-entry { border-bottom: 1px solid #eee; padding: 15px 0; }
         .log-entry:last-child { border-bottom: none; }
         .timestamp { color: #666; font-size: 14px; }
         .method { font-weight: bold; color: #d73a49; }
         .url { font-family: monospace; color: #005cc5; }
         .details { margin-top: 10px; font-size: 13px; color: #444; }
-        button { background: #005cc5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .posts { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 30px; }
+        .post-entry { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .post-entry:last-child { border-bottom: none; }
+        .post-title { font-weight: bold; color: #333; margin-bottom: 5px; }
+        .post-link { color: #005cc5; text-decoration: none; font-size: 14px; }
+        .post-link:hover { text-decoration: underline; }
+        button { background: #005cc5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-right: 10px; }
         button:hover { background: #004e8c; }
     </style>
 </head>
@@ -62,6 +68,8 @@
                 <canvas id="ipChart"></canvas>
             </div>
         </div>
+        <button onclick="refreshPosts()">Refresh Posts</button>
+        <div class="posts" id="posts"></div>
         <div class="logs" id="logs"></div>
     </div>
     <script>
@@ -232,9 +240,53 @@
         function refreshLogs() {
             loadLogs();
         }
-        
+
+        async function loadPosts() {
+            const response = await fetch('/posts');
+            const data = await response.json();
+
+            const postsContainer = document.getElementById('posts');
+            postsContainer.innerHTML = '';
+
+            if (data.posts.length === 0) {
+                postsContainer.innerHTML = '<p style="color: #666; text-align: center;">No posts yet</p>';
+                return;
+            }
+
+            data.posts.reverse().forEach(post => {
+                const entry = document.createElement('div');
+                entry.className = 'post-entry';
+
+                const title = document.createElement('div');
+                title.className = 'post-title';
+                title.textContent = post.title;
+                entry.appendChild(title);
+
+                const link = document.createElement('a');
+                link.className = 'post-link';
+                link.href = post.url;
+                link.target = '_blank';
+                link.textContent = post.url;
+                entry.appendChild(link);
+
+                const time = document.createElement('div');
+                time.className = 'timestamp';
+                const timestamp = new Date(post.timestamp);
+                time.textContent = timestamp.toLocaleString();
+                entry.appendChild(time);
+
+                postsContainer.appendChild(entry);
+            });
+        }
+
+        function refreshPosts() {
+            loadPosts();
+        }
+
         loadLogs();
         setInterval(loadLogs, 10000);
+        loadPosts();
+        setInterval(loadPosts, 30000);
     </script>
 </body>
 </html>

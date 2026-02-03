@@ -1,8 +1,12 @@
 package worker
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
+	"net/http"
 	"time"
 
 	"github.com/yoonhyunwoo/crab-trap/pkg/moltbook"
@@ -12,13 +16,15 @@ type Poster struct {
 	client      *moltbook.Client
 	submolt     string
 	pauseBetween time.Duration
+	serverURL   string
 }
 
-func NewPoster(apiKey, submolt string) *Poster {
+func NewPoster(apiKey, submolt, serverURL string) *Poster {
 	return &Poster{
 		client:      moltbook.NewClient(apiKey),
 		submolt:     submolt,
 		pauseBetween: 5 * time.Minute,
+		serverURL:   serverURL,
 	}
 }
 
@@ -80,22 +86,33 @@ func (p *Poster) PostAllTemplates(generator *Generator) error {
 func (p *Poster) PostWithRetry(title, content string) error {
 	maxRetries := 3
 	var lastErr error
+	var postURL string
 
 	for i := 0; i < maxRetries; i++ {
-		_, err := p.client.CreatePost(moltbook.CreatePostRequest{
+		resp, err := p.client.CreatePost(moltbook.CreatePostRequest{
 			Submolt: p.submolt,
 			Title:   title,
 			Content: content,
 		})
 
-		if err == nil {
-			return nil
+		if err == nil && resp.Success {
+			postURL = resp.Post.URL
+			break
 		}
 
 		lastErr = err
 
 		if rateErr, ok := err.(moltbook.RateLimitError); ok {
 			waitTime := time.Duration(rateErr.RetryAfterMinutes) * time.Minute
+			if waitTime == 0 {
+				// 30 min cooldown + jitter (0 to +5 min)
+				jitter := time.Duration(rand.Intn(5)) * time.Minute
+				waitTime = 30*time.Minute + jitter
+			} else {
+				// Use API provided time + jitter (0 to +5 min)
+				jitter := time.Duration(rand.Intn(5)) * time.Minute
+				waitTime = waitTime + jitter
+			}
 			log.Printf("Rate limited, waiting %v before retry %d/%d", waitTime, i+1, maxRetries)
 			time.Sleep(waitTime)
 		} else {
@@ -104,7 +121,34 @@ func (p *Poster) PostWithRetry(title, content string) error {
 		}
 	}
 
-	return fmt.Errorf("failed after %d retries: %w", maxRetries, lastErr)
+	if lastErr != nil {
+		return fmt.Errorf("failed after %d retries: %w", maxRetries, lastErr)
+	}
+
+	p.notifyServer(title, postURL)
+
+	return nil
+}
+
+func (p *Poster) notifyServer(title, url string) {
+	if p.serverURL == "" || url == "" {
+		return
+	}
+
+	record := map[string]string{
+		"title": title,
+		"url":   url,
+	}
+
+	body, err := json.Marshal(record)
+	if err != nil {
+		return
+	}
+
+	_, err = http.Post(p.serverURL+"/post", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		log.Printf("Failed to notify server of post: %v", err)
+	}
 }
 
 func (p *Poster) SetPauseBetween(duration time.Duration) {

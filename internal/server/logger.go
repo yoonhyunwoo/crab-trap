@@ -13,6 +13,7 @@ type Logger struct {
 	logDir string
 	mu     sync.RWMutex
 	logs   []*RequestLog
+	posts  []*PostRecord
 }
 
 func NewLogger(logDir string) (*Logger, error) {
@@ -42,6 +43,24 @@ func (l *Logger) GetAllLogs() []*RequestLog {
 	defer l.mu.RUnlock()
 
 	return l.logs
+}
+
+func (l *Logger) LogPost(post PostRecord) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.posts = append(l.posts, &post)
+
+	l.savePostsToFile()
+
+	return nil
+}
+
+func (l *Logger) GetAllPosts() []*PostRecord {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+
+	return l.posts
 }
 
 func (l *Logger) GetSummary() map[string]interface{} {
@@ -106,4 +125,21 @@ func (l *Logger) getLastRequestTime() string {
 		return "-"
 	}
 	return l.logs[len(l.logs)-1].Timestamp.Format(time.RFC3339)
+}
+
+func (l *Logger) savePostsToFile() {
+	if l.logDir == "" {
+		return
+	}
+
+	filePath := filepath.Join(l.logDir, "posts.json")
+
+	data, err := json.MarshalIndent(l.posts, "", "  ")
+	if err != nil {
+		return
+	}
+
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		return
+	}
 }
