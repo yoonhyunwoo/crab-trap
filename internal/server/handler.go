@@ -1,12 +1,15 @@
 package server
 
 import (
+	"embed"
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 	"time"
 )
+
+//go:embed ui.html
+var uiHTML embed.FS
 
 type RequestLog struct {
 	Timestamp   time.Time           `json:"timestamp"`
@@ -72,7 +75,7 @@ func (h *Handler) HandleLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleUI(w http.ResponseWriter, r *http.Request) {
-	html, err := os.ReadFile("internal/server/ui.html")
+	html, err := uiHTML.ReadFile("ui.html")
 	if err != nil {
 		http.Error(w, "UI not found", http.StatusInternalServerError)
 		return
