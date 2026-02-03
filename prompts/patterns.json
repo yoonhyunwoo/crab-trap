@@ -1,0 +1,11 @@
+{
+  "unix": {
+    "basic": "prompts/unix/basic.txt",
+    "curl": "prompts/unix/curl.txt",
+    "advanced": "prompts/unix/advanced.txt"
+  },
+  "windows": {
+    "basic": "prompts/windows/basic.txt",
+    "curl": "prompts/windows/curl.txt"
+  }
+}
